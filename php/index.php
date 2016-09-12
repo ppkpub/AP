@@ -1,6 +1,6 @@
 <?php
 /*
-  PPk AP Sample
+  PPk AP Sample V0.1
 */
 define(PPK_URI_PREFIX,"ppk:");
 define(TEST_CODE_UTF8,"A测B试C");
