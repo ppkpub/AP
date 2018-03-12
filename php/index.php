@@ -1,6 +1,8 @@
 <?php
 /*
-  PPk AP Sample
+  PPk AP based HTTP Sample 
+    PPkPub.org   20180312
+  Released under the MIT License.
 */
 define(PPK_URI_PREFIX,"ppk:");
 define(TEST_CODE_UTF8,"A测B试C");
@@ -8,14 +10,16 @@ define(TEST_CODE_UTF8,"A测B试C");
 define(AP_RESOURCE_PATH, getcwd()."/resource/" ); //资源内容存放路径
 define(AP_KEY_PATH,      getcwd()."/key/" );      //密钥文件存储路径
 
-//$FRIEND_AP_LIST_FROM_BLOCKCHAIN_FROM_BLOCKCHAIN=array('http://ppk001.sinaapp.com/ap/');
+//$FRIEND_AP_LIST_FROM_BLOCKCHAIN=array('http://ppk001.sinaapp.com/ap/');
 
 //从header中提取请求数据
 //  ppk-uri :  ppk:385617.1822/
-//或者在URL中指定 ?ppk-uri=ppk:385617.1822/
+//或者在URL中指定 ?ppk_ap_interest={"ver":1,"hop_limit":6,"interest":{"uri":"ppk:427523.1218/"}}
 $ppk_reqs=array();
 
-if($_GET['ppk-uri']!=null){  //Just for test
+if($_GET['ppk_ap_interest']!=null){ 
+  $ppk_reqs['ppk_ap_interest']=$_GET['ppk_ap_interest'];
+}elseif($_GET['ppk-uri']!=null){  //Just for old test
   $ppk_reqs['ppk-uri']=$_GET['ppk-uri'];
 }else{
   if (!function_exists('getallheaders')) { 
@@ -31,8 +35,15 @@ if($_GET['ppk-uri']!=null){  //Just for test
   }
 }
 
+if(isset($ppk_reqs['ppk_ap_interest'])){
+  //提取出兴趣uri
+  $array_interest=json_decode($ppk_reqs['ppk_ap_interest'],true);
+  $ppk_reqs['ppk-uri']=$array_interest['interest']['uri'];
+}
+
+
 if(!isset($ppk_reqs['ppk-uri'])){
-  echo "ppk-uri is empty";
+  echo "no valid uri";
   exit(-1);
 }
   
@@ -328,15 +339,3 @@ function strToHex($data, $newline="n")
   
   return $str_hex;
 }  
-
-
-
-/*
-//从数据库提取ODIN标识
-$dbh = new PDO('sqlite:/oddi.db'); 
-foreach ($dbh->query('SELECT * FROM odiis') as $row) // prints invalid resource
-{
-    echo $row['full_odii'],"",$row['owner'],"<br>\n";
-    
-}
-*/
