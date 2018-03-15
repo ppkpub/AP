@@ -1,7 +1,7 @@
 <?php
 /*
   PPk AP based HTTP Sample 
-    PPkPub.org   20180312
+    PPkPub.org   20180315
   Released under the MIT License.
 */
 define(PPK_URI_PREFIX,"ppk:");
@@ -10,11 +10,8 @@ define(TEST_CODE_UTF8,"A测B试C");
 define(AP_RESOURCE_PATH, getcwd()."/resource/" ); //资源内容存放路径
 define(AP_KEY_PATH,      getcwd()."/key/" );      //密钥文件存储路径
 
-//$FRIEND_AP_LIST_FROM_BLOCKCHAIN=array('http://ppk001.sinaapp.com/ap/');
-
-//从header中提取请求数据
-//  ppk-uri :  ppk:385617.1822/
-//或者在URL中指定 ?ppk_ap_interest={"ver":1,"hop_limit":6,"interest":{"uri":"ppk:427523.1218/"}}
+//在URL中指定例如 ?ppk_ap_interest={"ver":1,"hop_limit":6,"interest":{"uri":"ppk:426135.698/"}}  
+//或者从header中提取特征数据例如 ppk-uri :  ppk:426135.698/
 $ppk_reqs=array();
 
 if($_GET['ppk_ap_interest']!=null){ 
@@ -118,25 +115,7 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
 }else{
   //从静态资源目录下定位最新内容数据版本
   if(!file_exists( AP_RESOURCE_PATH.$parent_odin_path )){
-    //header("HTTP/1.1 404 Not Found");
-    //尝试从其他关联AP节点对等获取
-    for($kk=0;$kk<count($FRIEND_AP_LIST_FROM_BLOCKCHAIN);$kk++){
-      $tmp_friend_ap_uri=$FRIEND_AP_LIST_FROM_BLOCKCHAIN[$kk].'?ppk-uri='.url_encode($str_req_ppk_uri);
-      echo 'tmp_friend_ap_uri=',$tmp_friend_ap_uri,"<br>\n";
-      
-      //$ppk_sign=
-      
-      if(strlen($ppk_sign)>0){
-        setcookie("ppk-sign",$ppk_sign);
-        $resp_text=file_get_contents($tmp_friend_ap_uri);
-
-        header('Content-Type: text/html');
-        echo $resp_text;
-        exit(-1);
-      }
-    }
-    
-    echo "resource_dir:$parent_odin_path  not exist";
+    echo "resource_dir:$parent_odin_path  not exist. ppk-uri:".$str_req_ppk_uri.' .  local_path:'.getcwd();
     exit(-1);
   }
 
@@ -182,11 +161,6 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
   
   $ext = pathinfo($resource_path_and_filename, PATHINFO_EXTENSION);
 }
-
-//test
-//$str_resp_uri='ppk:426137.1518/uap2/sensor_b#1.0';
-//$str_resp_content='1';
-//end test
 
 //生成签名
 $ppk_sign=generatePPkSign($str_resp_uri,$str_resp_content);
