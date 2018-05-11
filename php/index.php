@@ -1,7 +1,7 @@
 <?php
 /*
   PPk AP based HTTP Sample 
-    PPkPub.org   20180315
+    PPkPub.org   20180511
   Released under the MIT License.
 */
 define(PPK_URI_PREFIX,"ppk:");
@@ -10,43 +10,31 @@ define(TEST_CODE_UTF8,"A测B试C");
 define(AP_RESOURCE_PATH, getcwd()."/resource/" ); //资源内容存放路径
 define(AP_KEY_PATH,      getcwd()."/key/" );      //密钥文件存储路径
 
-//在URL中指定例如 ?ppk_ap_interest={"ver":1,"hop_limit":6,"interest":{"uri":"ppk:426135.698/"}}  
-//或者从header中提取特征数据例如 ppk-uri :  ppk:426135.698/
-$ppk_reqs=array();
+//在URL中指定例如 ?pttp_interest={"ver":1,"interest":{"uri":"ppk:513468.490/"}}  
+//或者从POST FORM中提取
+$array_pttp_interest=array();
+$str_pttp_interest='';
+$str_pttp_uri='';
 
-if($_GET['ppk_ap_interest']!=null){ 
-  $ppk_reqs['ppk_ap_interest']=$_GET['ppk_ap_interest'];
-}elseif($_GET['ppk-uri']!=null){  //Just for old test
-  $ppk_reqs['ppk-uri']=$_GET['ppk-uri'];
-}else{
-  if (!function_exists('getallheaders')) { 
-      function getallheaders() { 
-         $headers = ''; 
-         foreach ($_SERVER as $name => $value) { 
-             if(strcasecmp(substr($name, 0, 4) ,'ppk_')==0) { 
-                $ppk_reqs[strtolower($name)]= $value; 
-             } 
-         } 
-         return $headers; 
-      } 
-  }
+if($_GET['pttp_interest']!=null){ 
+  $str_pttp_interest=trim($_GET['pttp_interest']);
+}elseif($_POST['pttp_interest']!=null){ 
+  $str_pttp_interest=trim($_POST['pttp_interest']);
 }
 
-if(isset($ppk_reqs['ppk_ap_interest'])){
+if(strlen($str_pttp_interest)>0){
   //提取出兴趣uri
-  $array_interest=json_decode($ppk_reqs['ppk_ap_interest'],true);
-  $ppk_reqs['ppk-uri']=$array_interest['interest']['uri'];
+  $array_pttp_interest=json_decode($str_pttp_interest,true);
+  $str_pttp_uri=$array_pttp_interest['interest']['uri'];
 }
 
 
-if(!isset($ppk_reqs['ppk-uri'])){
+if(!isset($str_pttp_uri)){
   echo "no valid uri";
   exit(-1);
 }
-  
-$str_req_ppk_uri=$ppk_reqs['ppk-uri'];
 
-if( 0!=strncasecmp($str_req_ppk_uri,PPK_URI_PREFIX,strlen(PPK_URI_PREFIX)) ){
+if( 0!=strncasecmp($str_pttp_uri,PPK_URI_PREFIX,strlen(PPK_URI_PREFIX)) ){
   echo "Invalid ppk-uri";
   exit(-1);
 }
@@ -57,7 +45,7 @@ $resource_id="";
 $req_resource_versoin="";
 $resource_filename="";
 
-$tmp_chunks=explode("#",substr($str_req_ppk_uri,strlen(PPK_URI_PREFIX)));
+$tmp_chunks=explode("#",substr($str_pttp_uri,strlen(PPK_URI_PREFIX)));
 if(count($tmp_chunks)>=2){
   $req_resource_versoin=$tmp_chunks[1];
 }
@@ -72,7 +60,7 @@ if(count($odin_chunks)==1){
   $parent_odin_path=implode('/',$odin_chunks);
 }
 
-//echo "str_req_ppk_uri=$str_req_ppk_uri\n";
+//echo "str_pttp_uri=$str_pttp_uri\n";
 //echo "parent_odin_path=$parent_odin_path , resource_id=$resource_id , req_resource_versoin=$req_resource_versoin \n";
 
 if(strlen($parent_odin_path)==0){
@@ -112,10 +100,11 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
   $resp_resource_versoin=strftime("20%y%m%d%H%M%S",time()).'.0';//示例代码简单以时间值作为动态版本编号
   
   $str_resp_uri=PPK_URI_PREFIX.$parent_odin_path.$resource_id."#".$resp_resource_versoin;
+  $str_content_type='text/html';
 }else{
   //从静态资源目录下定位最新内容数据版本
   if(!file_exists( AP_RESOURCE_PATH.$parent_odin_path )){
-    echo "resource_dir:$parent_odin_path  not exist. ppk-uri:".$str_req_ppk_uri.' .  local_path:'.getcwd();
+    echo "resource_dir:$parent_odin_path  not exist. ppk-uri:".$str_pttp_uri.' .  local_path:'.getcwd();
     exit(-1);
   }
 
@@ -160,60 +149,19 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
   $str_resp_content=@file_get_contents($resource_path_and_filename);
   
   $ext = pathinfo($resource_path_and_filename, PATHINFO_EXTENSION);
+  //简单判断内容类型
+  if( strcasecmp($ext,'jpeg')==0 || strcasecmp($ext,'jpg')==0 || strcasecmp($ext,'gif')==0 || strcasecmp($ext,'png')==0)
+    $str_content_type='image/'.$ext;
+  else  
+    $str_content_type='text/html';
 }
 
-//生成签名
-$ppk_sign=generatePPkSign($str_resp_uri,$str_resp_content);
+$str_pttp_data=generatePTTPData( $str_resp_uri,$str_content_type,$str_resp_content );
 
-//在header或cookie部分加上签名
-//header("ppk-sign: "+base64_encode($ppk_sign));
-setcookie("ppk-sign",$ppk_sign);
-
-//输出内容类型头定义
-if( strcasecmp($ext,'jpeg')==0 || strcasecmp($ext,'jpg')==0 || strcasecmp($ext,'gif')==0 || strcasecmp($ext,'png')==0)
-  header('Content-Type: image/'.$ext);
-else  
-  header('Content-Type: text/html');
-  
 //输出数据正文
-echo $str_resp_content;
+header('Content-Type: text/json');
+echo $str_pttp_data;
 
-//生成签名
-function generatePPkSign($str_resp_uri,$str_resp_content){
-  //echo "str_resp_uri=$str_resp_uri\n";
-  //读取对应的父级ODIN密钥
-  $parent_odin=substr($str_resp_uri,strlen(PPK_URI_PREFIX));
-  $tmp_posn=strrpos($parent_odin,'/');
-  if($tmp_posn<1)
-    return '';
-  
-  $parent_odin=substr($parent_odin,0,$tmp_posn);
-  
-  $tmp_posn=strrpos($parent_odin,'/');
-  if($tmp_posn>0){
-    $up_parent_odin=substr($parent_odin,0,$tmp_posn);
-    $up_resource_id=substr($parent_odin,$tmp_posn+1);
-  }else{
-    $up_parent_odin="";
-    $up_resource_id=$parent_odin;
-  }
-  $parent_key_set=getOdinKeySet($up_parent_odin,$up_resource_id);
-  if($parent_key_set==null)
-    return '';
-  
-  $vd_prv_key="-----BEGIN PRIVATE KEY-----\n".$parent_key_set['RSAPrivateKey']."-----END PRIVATE KEY-----";
-  
-  if(strlen($vd_prv_key)==0){
-    return "";
-  }
-  
-  $str_resp_sign=rsaSign($str_resp_content.$str_resp_uri,$vd_prv_key,OPENSSL_ALGO_MD5);
-
-  $ppk_sign=json_encode(array("ppk-uri"=>$str_resp_uri,"algo"=>"MD5withRSA","debug_pubkey"=>$parent_key_set['RSAPublicKey'],"sign_base64"=>$str_resp_sign));
-  
-  return $ppk_sign;
-  
-}
 
 //获取请求资源对应的签名验证设置
 function getOdinKeySet($parent_odin_path,$resource_id,$resp_resource_versoin=''){
@@ -313,3 +261,87 @@ function strToHex($data, $newline="n")
   
   return $str_hex;
 }  
+
+/*
+ 应答处理异常状态
+*/
+function respPttpStatus4XX( $ap_odin_root,$status_code,$status_detail ) {
+    $str_resp = '{"ver":1,"data":{"uri":"'.$ap_odin_root.'\/'.$status_code.'#1.0","utc":1520830129,"status_code":"'.$status_code.'","status_detail":"'.$status_detail.'","metainfo":{"block_id":"1","lastblock_id":"","chunk_index":0,"chunk_count":1,"content_type":"text\/html","content_length":0},"content":""},"sign":""}';
+    return $str_resp;
+}
+
+
+/*
+ 生成PTTP应答数据包
+*/
+function generatePttpData( $str_resp_uri,$str_content_type,$str_resp_content ) {
+  $array_metainfo=array();
+
+  //对于非html类型的正文内容都缺省采用base64编码
+  if( $str_content_type !='text/html' ) {
+    $str_resp_content=base64_encode($str_resp_content);
+    $array_metainfo['content_encoding']='base64';
+    //$str_resp_content=base64_encode(gzcompress($str_resp_content));
+    //$array_metainfo['content_encoding']='gzip';
+  }
+ 
+  $array_metainfo['content_type']=$str_content_type;
+  $array_metainfo['content_length']=strlen($str_resp_content);
+
+  $obj_data=array(
+    "uri"=>$str_resp_uri,
+    "utc"=>time(),
+    "status_code"=>"200",
+    "status_detail"=>"OK",
+    "metainfo" => $array_metainfo,
+    "content"=>$str_resp_content
+  );
+  
+  $str_encoded_data = json_encode($obj_data);
+  $str_sign=generatePttpSign($str_resp_uri,$str_encoded_data);
+  
+  $obj_resp=array(
+    "ver"  => 1, 
+    "data" => $str_encoded_data,
+    "sign" => $str_sign
+  );
+  
+  return json_encode($obj_resp);
+}
+
+//生成签名
+function generatePttpSign($str_resp_uri,$str_resp_data){
+  //echo "generatePttpSign() str_resp_data_hex=",strToHex($str_resp_data),"\n";
+  //读取对应的父级ODIN密钥
+  $parent_odin=substr($str_resp_uri,strlen(PPK_URI_PREFIX));
+  $tmp_posn=strrpos($parent_odin,'/');
+  if($tmp_posn<1)
+    return '';
+  
+  $parent_odin=substr($parent_odin,0,$tmp_posn);
+  
+  $tmp_posn=strrpos($parent_odin,'/');
+  if($tmp_posn>0){
+    $up_parent_odin=substr($parent_odin,0,$tmp_posn);
+    $up_resource_id=substr($parent_odin,$tmp_posn+1);
+  }else{
+    $up_parent_odin="";
+    $up_resource_id=$parent_odin;
+  }
+  $parent_key_set=getOdinKeySet($up_parent_odin,$up_resource_id);
+  if($parent_key_set==null)
+    return '';
+  
+  $vd_prv_key="-----BEGIN PRIVATE KEY-----\n".$parent_key_set['RSAPrivateKey']."-----END PRIVATE KEY-----";
+  
+  if(strlen($vd_prv_key)==0){
+    return "";
+  }
+  
+  $str_resp_sign=rsaSign($str_resp_data,$vd_prv_key,OPENSSL_ALGO_MD5);
+
+  $pttp_sign="MD5withRSA:".$str_resp_sign;
+  
+  return $pttp_sign;
+  
+}
