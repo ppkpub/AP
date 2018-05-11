@@ -7,6 +7,8 @@
 define(PPK_URI_PREFIX,"ppk:");
 define(TEST_CODE_UTF8,"A测B试C");
 
+define(AP_NODE_NAME, 'AP DEMO by PHP, 20180511' );      //AP节点名称
+define(AP_DEFAULT_ODIN, PPK_URI_PREFIX.'513468.490/' ); //缺省使用的ODIN标识
 define(AP_RESOURCE_PATH, getcwd()."/resource/" ); //资源内容存放路径
 define(AP_KEY_PATH,      getcwd()."/key/" );      //密钥文件存储路径
 
@@ -30,12 +32,12 @@ if(strlen($str_pttp_interest)>0){
 
 
 if(!isset($str_pttp_uri)){
-  echo "no valid uri";
+  respPttpStatus4XX( '400',"Bad Request : no valid uri " );
   exit(-1);
 }
 
 if( 0!=strncasecmp($str_pttp_uri,PPK_URI_PREFIX,strlen(PPK_URI_PREFIX)) ){
-  echo "Invalid ppk-uri";
+  respPttpStatus4XX( '400',"Bad Request : Invalid ppk-uri " );
   exit(-1);
 }
 
@@ -64,7 +66,7 @@ if(count($odin_chunks)==1){
 //echo "parent_odin_path=$parent_odin_path , resource_id=$resource_id , req_resource_versoin=$req_resource_versoin \n";
 
 if(strlen($parent_odin_path)==0){
-  echo "The root ODIN should be parsed from bitcoin blockchain directly or from the cetified api service!";
+  respPttpStatus4XX( '403',"Forbidden : The root ODIN should be parsed from bitcoin blockchain directly or from the cetified api service! " );
   exit(-1);
 }
 
@@ -104,7 +106,7 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
 }else{
   //从静态资源目录下定位最新内容数据版本
   if(!file_exists( AP_RESOURCE_PATH.$parent_odin_path )){
-    echo "resource_dir:$parent_odin_path  not exist. ppk-uri:".$str_pttp_uri.' .  local_path:'.getcwd();
+    respPttpStatus4XX( '404',"Not Found : resource_dir:$parent_odin_path  not exist. ppk-uri:".$str_pttp_uri );
     exit(-1);
   }
 
@@ -140,8 +142,7 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
   //echo "resource_path_and_filename=$resource_path_and_filename , resource_id=$resource_id , resp_resource_versoin=$resp_resource_versoin \n";
 
   if(!file_exists($resource_path_and_filename )){
-    header("HTTP/1.1 404 Not Found");
-    //echo "$resource_path_and_filename not exist";
+    respPttpStatus4XX( '404',"Not Found : $resource_path_and_filename " );
     exit(-1);
   }
 
@@ -156,7 +157,7 @@ if($tmp_posn1!==false||$tmp_posn2!==false){
     $str_content_type='text/html';
 }
 
-$str_pttp_data=generatePTTPData( $str_resp_uri,$str_content_type,$str_resp_content );
+$str_pttp_data=generatePTTPData( $str_resp_uri,'200','OK',$str_content_type,$str_resp_content );
 
 //输出数据正文
 header('Content-Type: text/json');
@@ -265,16 +266,15 @@ function strToHex($data, $newline="n")
 /*
  应答处理异常状态
 */
-function respPttpStatus4XX( $ap_odin_root,$status_code,$status_detail ) {
-    $str_resp = '{"ver":1,"data":{"uri":"'.$ap_odin_root.'\/'.$status_code.'#1.0","utc":1520830129,"status_code":"'.$status_code.'","status_detail":"'.$status_detail.'","metainfo":{"block_id":"1","lastblock_id":"","chunk_index":0,"chunk_count":1,"content_type":"text\/html","content_length":0},"content":""},"sign":""}';
-    return $str_resp;
+function respPttpStatus4XX( $status_code,$status_detail ) {
+    echo generatePttpData(AP_DEFAULT_ODIN.'/'.$status_code.'#1.0',$status_code,$status_detail,'text/html','','no-store');
 }
 
 
 /*
  生成PTTP应答数据包
 */
-function generatePttpData( $str_resp_uri,$str_content_type,$str_resp_content ) {
+function generatePttpData( $str_resp_uri,$status_code,$status_detail,$str_content_type,$str_resp_content,$str_cache_control='public' ) {
   $array_metainfo=array();
 
   //对于非html类型的正文内容都缺省采用base64编码
@@ -287,12 +287,14 @@ function generatePttpData( $str_resp_uri,$str_content_type,$str_resp_content ) {
  
   $array_metainfo['content_type']=$str_content_type;
   $array_metainfo['content_length']=strlen($str_resp_content);
-
+  $array_metainfo['ap_node']=AP_NODE_NAME;
+  $array_metainfo['cache-control']=$str_cache_control;
+  
   $obj_data=array(
     "uri"=>$str_resp_uri,
     "utc"=>time(),
-    "status_code"=>"200",
-    "status_detail"=>"OK",
+    "status_code" => $status_code,
+    "status_detail" => $status_detail,
     "metainfo" => $array_metainfo,
     "content"=>$str_resp_content
   );
@@ -312,6 +314,7 @@ function generatePttpData( $str_resp_uri,$str_content_type,$str_resp_content ) {
 //生成签名
 function generatePttpSign($str_resp_uri,$str_resp_data){
   //echo "generatePttpSign() str_resp_data_hex=",strToHex($str_resp_data),"\n";
+  
   //读取对应的父级ODIN密钥
   $parent_odin=substr($str_resp_uri,strlen(PPK_URI_PREFIX));
   $tmp_posn=strrpos($parent_odin,'/');
