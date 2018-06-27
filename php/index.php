@@ -1,16 +1,18 @@
 <?php
 /*
   PPk AP based HTTP Sample 
-    PPkPub.org   20180511
+    PPkPub.org   
   Released under the MIT License.
+20180626: Using SHA256 as default hash
 */
 define(PPK_URI_PREFIX,"ppk:");
 define(TEST_CODE_UTF8,"A测B试C");
 
-define(AP_NODE_NAME, 'AP DEMO by PHP, 20180511' );      //AP节点名称
+define(AP_NODE_NAME, 'AP DEMO by PHP, 20180626' );      //AP节点名称
 define(AP_DEFAULT_ODIN, PPK_URI_PREFIX.'513468.490/' ); //缺省使用的ODIN标识
-define(AP_RESOURCE_PATH, getcwd()."/resource/" ); //资源内容存放路径
-define(AP_KEY_PATH,      getcwd()."/key/" );      //密钥文件存储路径
+define(AP_RESOURCE_PATH, getcwd()."/apdemo-resource/" ); //资源内容存放路径
+define(AP_KEY_PATH,      getcwd()."/apdemo-key/" );      //密钥文件存储路径
+define(DEFAULT_SIGN_HASH_ALGO, 'SHA256' );      //缺省的签名用哈希算法
 
 //在URL中指定例如 ?pttp_interest={"ver":1,"interest":{"uri":"ppk:513468.490/"}}  
 //或者从POST FORM中提取
@@ -341,9 +343,10 @@ function generatePttpSign($str_resp_uri,$str_resp_data){
     return "";
   }
   
-  $str_resp_sign=rsaSign($str_resp_data,$vd_prv_key,OPENSSL_ALGO_MD5);
+  //$str_resp_sign=rsaSign($str_resp_data,$vd_prv_key,);
+  $str_resp_sign=rsaSign($str_resp_data,$vd_prv_key,DEFAULT_SIGN_HASH_ALGO);
 
-  $pttp_sign="MD5withRSA:".$str_resp_sign;
+  $pttp_sign=DEFAULT_SIGN_HASH_ALGO."withRSA:".$str_resp_sign;
   
   return $pttp_sign;
   
