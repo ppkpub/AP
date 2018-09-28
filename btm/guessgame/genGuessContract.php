@@ -40,12 +40,12 @@ if(strcmp($obj_resp['status'],'success')===0){
       {
         "account_id": "'.$current_account_info['id'].'",
         "amount": '.BTM_BONUS_TOKEN_AMOUNT.',
-        "asset_id": "'.JIYBLOCK_TOEKN_ASSET_ID.'",
+        "asset_id": "'.JOYBLOCK_TOEKN_ASSET_ID.'",
         "type": "spend_account"
       },
       {
         "amount": '.BTM_BONUS_TOKEN_AMOUNT.',
-        "asset_id": "'.JIYBLOCK_TOEKN_ASSET_ID.'",
+        "asset_id": "'.JOYBLOCK_TOEKN_ASSET_ID.'",
         "control_program": "'.$compiled_control_program.'",
         "type": "control_program"
       }

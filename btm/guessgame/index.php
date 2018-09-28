@@ -19,7 +19,7 @@ if(strcmp($obj_resp['status'],'success')===0){
     //echo "<!-- ",$obj_resp['data'][$kk]['tx_id'],"-->\n";
     for($pp=0;$pp<count($obj_resp['data'][$kk]['outputs']);$pp++){
       $tmp_out=$obj_resp['data'][$kk]['outputs'][$pp];
-      if($tmp_out['type']=='retire' && $tmp_out['asset_id']==JIYBLOCK_TOEKN_ASSET_ID ){
+      if($tmp_out['type']=='retire' && $tmp_out['asset_id']==JOYBLOCK_TOEKN_ASSET_ID ){
         $tmp_tx_data=getBtmTransactionDetail($obj_resp['data'][$kk]['tx_id']);
         if($tmp_tx_data!=null){
           $obj_set=parseGameRecordFromBtmTransaction($tmp_tx_data);

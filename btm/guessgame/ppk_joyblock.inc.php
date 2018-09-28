@@ -32,7 +32,7 @@ $btm_netinfo=$obj_resp['data'];
 $gStrBtmNetworkId=$btm_netinfo['network_id'];
 if(strcasecmp($gStrBtmNetworkId,'mainnet')==0){
   //mainnet
-  define('JIYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+  define('JOYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   define('FUND_BTM_ADDRESS','xxxxxxxxxx');
   define('BTM_NODE_API_TOKEN','');
 
@@ -45,7 +45,7 @@ if(strcasecmp($gStrBtmNetworkId,'mainnet')==0){
   );
 }else if(strcasecmp($gStrBtmNetworkId,'solonet')==0){
   //solonet
-  define('JIYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+  define('JOYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
   define('FUND_BTM_ADDRESS','xxxxxxx');
   define('BTM_NODE_API_TOKEN','');
 
@@ -58,12 +58,12 @@ if(strcasecmp($gStrBtmNetworkId,'mainnet')==0){
   );
 }else{
   //testnet
-  define('JIYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');
-  define('FUND_BTM_ADDRESS','xxxxxxx');
+  define('JOYBLOCK_TOEKN_ASSET_ID','xxxxxxxxxxxxxxxxxxxxxxxxxxxx');  //自己发行的猜谜游戏资产ID
+  define('FUND_BTM_ADDRESS','xxxxxxx'); //游戏发布者钱包地址
   define('BTM_NODE_API_TOKEN','');
 
-  $gArrayNodeAccounts=array(
-    array('id'=>'0IOE8PIMG0A02','pwd'=>'******','address'=>'xxxxxxx'),
+  $gArrayNodeAccounts=array(  
+    array('id'=>'0IOE8PIMG0A02','pwd'=>'******','address'=>'xxxxxxx'), 
     array('id'=>'0IOEFJFRG0A04','pwd'=>'******','address'=>'xxxxxxx'),
     array('id'=>'0IP461VU00A02','pwd'=>'******','address'=>'xxxxxxx'),
     array('id'=>'0IP46IDC00A04','pwd'=>'******','address'=>'xxxxxxx'),
@@ -98,7 +98,7 @@ function getBtmTransactionDetail($tx_id){
 //从交易详情中提取出符合特定起始前缀标识的附加信息（HEX编码）
 function parseSpecHexFromBtmTransaction($obj_tx_data,$str_flag){
   foreach($obj_tx_data['outputs'] as $tmp_out ){
-    if($tmp_out['type']=='retire' && $tmp_out['asset_id']==JIYBLOCK_TOEKN_ASSET_ID ){
+    if($tmp_out['type']=='retire' && $tmp_out['asset_id']==JOYBLOCK_TOEKN_ASSET_ID ){
       $str_hex= $tmp_out['control_program'];
       //echo 'str_hex=',$str_hex;
       $str_flag_hex=strtohex($str_flag);

@@ -29,12 +29,12 @@ $tmp_post_data='{
     {
       "account_id": "'.$current_account_info['id'].'",
       "amount": 1,
-      "asset_id": "'.JIYBLOCK_TOEKN_ASSET_ID.'",
+      "asset_id": "'.JOYBLOCK_TOEKN_ASSET_ID.'",
       "type": "spend_account"
     },
     {
       "amount": 1,
-      "asset_id": "'.JIYBLOCK_TOEKN_ASSET_ID.'",
+      "asset_id": "'.JOYBLOCK_TOEKN_ASSET_ID.'",
       "arbitrary": "'.$game_trans_data_hex.'",
       "type": "retire"
     }

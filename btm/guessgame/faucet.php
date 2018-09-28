@@ -28,7 +28,7 @@ Please input Bytom testnet address which is start from t...</p>
 你的比原测试钱包地址：<input type="text" name="your_address" id="your_address" value="" size=50 ><br><br>
 　　可选领取资产类型：<select name="asset_id">
 <option value="">10 BTM</p>
-<option value="<?php echo JIYBLOCK_TOEKN_ASSET_ID;?>">1000 PPkJoyDemoToken</p>
+<option value="<?php echo JOYBLOCK_TOEKN_ASSET_ID;?>">1000 PPkJoyDemoToken</p>
 </select><br><br>
 　　　　　　　　　　　<input type='submit' id="game_send_trans_btn" value=' 马上免费领取 Get now for free! '> 
 </p>
