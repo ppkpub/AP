@@ -72,6 +72,46 @@ function rsaSign($data,$strValidationPrvkey,$algo){
     return base64_encode($signature);
 }
 
+/**
+     * Verify the RSA signature
+     *
+     * @param string $str_original 
+     * @param string $str_pubkey 
+     * @param string $sign (base64 encoded)
+     * @param string $algo (for example: SHA256withRSA)
+     *
+     * @return bool
+     */
+function rsaVerify($str_original, $str_pubkey, $sign, $algo )
+{
+    $res = false;
+    $sign = base64_decode($sign);
+    
+    if(strpos($str_pubkey,"BEGIN PUBLIC KEY")===false){
+        $str_pubkey = "-----BEGIN PUBLIC KEY-----\n".$str_pubkey.'-----END PUBLIC KEY-----';
+    }
+    
+    $php_algo='';
+    switch($algo){
+        case 'SHA256withRSA':
+            $php_algo='SHA256';
+            break;
+        case 'SHA1withRSA':
+            $php_algo='SHA1';
+            break;
+        case 'MD5withRSA':
+            $php_algo='MD5';
+            break;
+        default:
+            $php_algo=$algo;
+    }
+    
+    if ($sign !== false && openssl_verify($str_original, $sign, $str_pubkey,$php_algo) == 1) {
+        $res = true;
+    }
+
+    return $res;
+}
 
 //Compare resource version number
 function cmpResourceVersion($rv1,$rv2){
@@ -276,7 +316,7 @@ function  getPubUserInfo($user_odin){
                 $default_user_info['name']=@$tmp_user_info['title'];
                 $default_user_info['email']=@$tmp_user_info['email'];
                 $default_user_info['register']='bitcoin:'.$tmp_user_info['register'];
-                $default_user_info['pubkey']= strlen(@$tmp_user_info['vd_set']['pubkey']>0) 
+                $default_user_info['pubkey']= strlen(@$tmp_user_info['vd_set']['pubkey'])>0 
                                              ? $tmp_user_info['vd_set']['pubkey'] : $tmp_user_info['authentication'][0]['publicKeyHex'];
             }
         }
