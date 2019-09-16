@@ -1,0 +1,335 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>登记奥丁号对应比特现金地址- (Register BitcoinCash Address of ODIN) </title>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="http://tool.ppkpub.org/swap/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<h3>登记奥丁号对应比特现金地址- (Register BitcoinCash Address of ODIN)</h3>
+
+<form class="form-horizontal">
+<div class="form-group">
+    <label for="exist_odin_uri" class="col-sm-2 control-label">你的奥丁号(Your ODIN)</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="exist_odin_uri" value="ppk:YourODIN#"  onchange="getUserOdinInfo();" readonly >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="exist_odin_uri" class="col-sm-2 control-label">已关联的比特现金地址(Binded BitcoinCash address)</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="binded_address" value="" placeholder="" readonly >
+    </div>
+</div>
+
+<div class="form-group">
+    <label for="exist_odin_uri" class="col-sm-2 control-label">关联新的比特现金地址(New BitcoinCash address)</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control"  id="new_address" value="" placeholder="请输入q起始的比特现金主网钱包地址(Please input the BitcoinCash address starting with q)" >
+    </div>
+</div>
+  
+<div class="form-group">
+    <label for="use_exist_odin" class="col-sm-2 control-label"></label>
+    <div class="col-sm-10" align="center">
+      <input type='button' class="btn btn-success"  id="use_exist_odin" value=' 验证确认(Submit) ' onclick='checkInputs();' disabled="true">
+    </div>
+</div>
+
+</form>
+
+
+
+<p>接口定义示例链接（More samples of PPk APIs）：</p>
+<ul>
+<li><a href="ppk:bch/metadata()%23">读取币种定义(Get the metadata of BitcoinCash by open API): ppk:bch/metadata()#</a></li>
+<!--<li><a href="ppk:bch/getBindedAddress()%23">读取刚设置的地址信息:ppk:bch/getAddress("Your_ODIN")#</a></li>-->
+<li><a href="ppk:bch/qrCodeOfPay(7b2266726f6d5f757269223a2270706b3a6a6f795c2f62746d5c2f626d317139766e7070367a687077797665687a3673386b746b687072766d757473777a7a6d6c78796e6d222c22746f5f757269223a2270706b3a6a6f795c2f62746d5c2f626d31717733367678376d76386e76306b676d6332386664707437703066397467706466797a6b37396a222c2261737365745f757269223a2270706b3a6a6f795c2f62746d5c2f222c22616d6f756e745f7361746f736869223a3130333136352c226665655f7361746f736869223a3130303030302c2264617461223a224f44494e535741503a616363657074656420746f2073656c6c204f44494e5b37333137365d20746f202870706b3a313032303730232920666f7220302e303031322042544d222c22646174615f73697a65223a36397d)%23">获取交易二维码(Get the QR code for generating BitcoinCash transction by open API): ppk:bch/getPayQrCode(7b226672...7d)#</a></li>
+</ul>
+
+<p>更多链接（More links）：</p>
+<ul>
+<li><a href="https://btm.ppkpub.org/swap2/">新版拍卖工具测试(The PPkSwapTool Demo)</a></li>
+</ul>
+
+<div class="form-group">
+    <label for="debug_data" class="col-sm-2 control-label">调试数据(Debug)</label>
+    <div class="col-sm-10">
+      <textarea class="form-control"  id="debug_data" rows=5 readonly></textarea>
+    </div>
+</div>
+</body>
+
+<script src="http://tool.ppkpub.org/swap/js/common_func.js"></script>
+<script type="text/javascript">
+var mCoinUri="ppk:bch/"; //币种标识
+
+var mObjUserInfo;
+var mObjUserPubKey;
+var mTempData;
+var mTempDataHex;
+var mSignedData;
+
+window.onload=function(){
+    init();
+    
+    /*
+    var test;
+    
+    test={"address":"1HVSDUmW3abkitZUoZsYMKZ2PbiKhr8Rdo"};
+    callback_setNewAddress('OK',test);
+    test={"status":"OK","register_num":"15","last_register_odin":{"full_odin":"559411.1747","asset_id":"39642","register":"1HVSDUmW3abkitZUoZsYMKZ2PbiKhr8Rdo","admin":"1HVSDUmW3abkitZUoZsYMKZ2PbiKhr8Rdo","block_index":"559411","block_hash":"0000000000000000000cddeb7a38abcba7bff08200b4127cbf37df1af958cbea","block_time":"1548044945"},"balance_satoshi":3000,"unconfirmed_tx_count":0};
+    callback_getBtcAddressSummary('OK',test);
+    */
+    
+    //var test={"odin_uri":"ppk:100#"};
+    //callback_setNewOdin('OK',test);
+}
+
+function init(){
+    console.log("init...");
+    if(typeof(PeerWeb) !== 'undefined'){ //检查PPk开放协议相关PeerWeb JS接口可用性
+        console.log("PeerWeb enabled");
+        
+        //读取PPk浏览器内置钱包中缺省用户身份标识
+        PeerWeb.getDefaultODIN(
+            'callback_getDefaultODIN'  //回调方法名称
+        );
+    }else{
+        console.log("PeerWeb not valid");
+        alert("PeerWeb not valid. Please visit by PPk Browser For Android v0.2.6 above.");
+        //document.getElementById("use_exist_odin").disabled=true;
+    }
+}
+
+function callback_getDefaultODIN(status,obj_data){
+    if('OK'==status){
+        if(obj_data.odin_uri!=null || obj_data.odin_uri.trim().length>0){
+            document.getElementById("exist_odin_uri").value=obj_data.odin_uri;
+            getUserOdinInfo();
+        }
+    }else{
+        alert("请先在浏览器里配置所要使用的奥丁号！");
+    }
+}
+
+//兼容DID的用户标识处理，得到以ppk:起始的URI
+function getUserPPkURI(user_uri){ 
+    if(user_uri.substring(0,"did:ppk:".length).toLowerCase()=="did:ppk:" ) { 
+        user_uri=user_uri.substring("did:".length);
+    }
+    return user_uri;
+}
+
+function getUserOdinInfo(){
+    //document.getElementById("use_exist_odin").disabled=true;
+    var exist_odin_uri=getUserPPkURI(document.getElementById("exist_odin_uri").value);
+    //读取用户身份标识URI对应说明
+    PeerWeb.getPPkResource(
+        exist_odin_uri,
+        'content',
+        'callback_getUserOdinInfo'  //回调方法名称
+    );
+}
+
+function callback_getUserOdinInfo(status,obj_data){
+    if('OK'==status){
+        try{
+            var content=window.atob(obj_data.content_base64);
+            //var content=obj_data.content_base64;
+            //alert("type="+obj_data.type+" \nlength="+obj_data.length+"\nurl="+obj_data.url+"\ncontent="+content);
+            mObjUserInfo = JSON.parse(content);
+            document.getElementById("use_exist_odin").disabled=false;
+            
+            getBindedAddress();
+        }catch(e){
+            alert("获得的奥丁号信息有误!\n"+e);
+        }
+    }else{
+        alert("无法获取对应奥丁号信息！\n请检查确认下述奥丁号:\n"+document.getElementById("exist_odin_uri").value);
+    }
+}
+
+function getBindedAddress(){
+    var exist_odin_uri=getUserPPkURI(document.getElementById("exist_odin_uri").value);
+
+    var tmp_json_hex = stringToHex(exist_odin_uri);
+    var query_uri=mCoinUri+'bindedAddress('+tmp_json_hex+')#';
+    //alert('query_uri='+query_uri);
+    document.getElementById("debug_data").value=query_uri;
+    
+    //读取用户身份标识URI对应说明
+    PeerWeb.getPPkResource(
+        query_uri,
+        'content',
+        'callback_getBindedAddress'  //回调方法名称
+    );
+}
+
+function callback_getBindedAddress(status,obj_data){
+    if('OK'==status){
+        try{
+            document.getElementById("debug_data").value="status_code="+obj_data.status_code+"\ntype="+obj_data.type+" \nlength="+obj_data.length+"\nservice_url="+obj_data.url;
+            
+            if(obj_data.status_code!=200){
+                //alert("未能获得已关联地址信息(status_code:"+obj_data.status_code+")！\n请稍后再试");
+                return;
+            }
+            
+            var content=window.atob(obj_data.content_base64);
+            //var content=obj_data.content_base64;
+            document.getElementById("debug_data").value="type="+obj_data.type+" \nlength="+obj_data.length+"\ncontent="+content+"\nservice_url="+obj_data.url;
+            var obj_content=JSON.parse(content);
+            //alert("obj_content.address="+obj_content.address);
+            document.getElementById("binded_address").value=obj_content.address;
+        }catch(e){
+            alert("获得的已关联地址信息有误!\n"+e);
+        }
+    }else{
+        alert("未能获得已关联地址信息！\n请稍后再试");
+    }
+}
+
+function checkInputs(){
+    var owner_odin_uri=getUserPPkURI(document.getElementById("exist_odin_uri").value);
+    var new_address=document.getElementById("new_address").value.trim();
+    
+    if(new_address.length==0 || ! new_address.startsWith("q")){
+        alert("请输入有效的比特现金钱包地址（以q起始）");
+        return;
+    }
+    
+    if(typeof(mObjUserInfo.vd_set) !== 'undefined'){
+        //设置有奥丁号缺省格式的验证参数
+        mObjUserPubKey=mObjUserInfo.vd_set.pubkey;
+        //alert('mObjUserPubKey:'+mObjUserPubKey);
+        authAsOdinOwner(owner_odin_uri,new_address);
+    }else if(typeof(mObjUserInfo.authentication) !== 'undefined'){
+        //设置有兼容DID规范的验证参数
+        if(typeof(mObjUserInfo.authentication[0].publicKeyHex) !== 'undefined')
+            mObjUserPubKey=mObjUserInfo.authentication[0].publicKeyHex;
+        else if(typeof(mObjUserInfo.authentication[0].publicKeyPem) !== 'undefined')
+            mObjUserPubKey=mObjUserInfo.authentication[0].publicKeyPem;
+        //alert('publicKey:'+mObjUserPubKey);
+        authAsOdinOwner(owner_odin_uri,new_address);
+    }else{
+        //未设置验证参数
+        alert("指定标识尚未设置身份密钥，无法确认登记！");
+    }
+}
+
+function authAsOdinOwner(owner_odin_uri,new_address){
+    var requester_uri=window.location.href;
+    mTempData = '{"owner_uri":"'+owner_odin_uri+'","coin_uri":"'+mCoinUri+'","address":"'+new_address+'"}';  //需要签名的原文
+    //alert('mTempData:'+mTempData);
+    mTempDataHex = stringToHex(mTempData);
+    
+    document.getElementById("use_exist_odin").disabled=true;
+    document.getElementById("use_exist_odin").value="正在处理，请稍后...";
+    
+    //请求用指定资源密钥来生成签名
+    PeerWeb.signWithPPkResourcePrvKey(
+        owner_odin_uri,
+        requester_uri ,
+        mTempDataHex,
+        'callback_signWithPPkResourcePrvKey'  //回调方法名称
+    );
+}
+
+function callback_signWithPPkResourcePrvKey(status,obj_data){
+    try{
+        if('OK'==status){
+        
+            //alert("res_uri="+obj_data.res_uri+" \nsign="+obj_data.sign+" \algo="+obj_data.algo);
+            
+            //验证签名
+            mSignedData=obj_data.algo+":"+obj_data.sign;
+            PeerWeb.verifySign(
+                mTempDataHex,
+                mObjUserPubKey ,
+                obj_data.sign,
+                obj_data.algo,
+                'callback_verifySign'  //回调方法名称
+            );
+        
+        }else{
+            showErrorMag("无法签名指定资源！\n请检查确认该资源已配置有效的验证密钥.");
+        }
+    }catch(e){
+        showErrorMag("获得的签名信息有误!\n"+e);
+    }
+}
+
+function callback_verifySign(status,obj_data){
+    try{
+        if('OK'==status){
+            var user_uri=document.getElementById("exist_odin_uri").value;
+            //alert("验证奥丁号拥有者签名成功\n");
+            updateOwnerAddress(user_uri,mTempData,mSignedData);
+        }else{
+            showErrorMag("奥丁号拥有者签名验证未通过！");
+        }
+    }catch(e){
+        showErrorMag("验证签名信息有误!\n"+e);
+    }
+}
+
+function updateOwnerAddress(owner_uri,original,sign_data){
+    var tmp_obj={"original":original,"sign":sign_data};
+    
+    var tmp_json_str=JSON.stringify(tmp_obj);
+    var tmp_json_hex = stringToHex(tmp_json_str);
+    var update_uri=mCoinUri+'bindAddress('+tmp_json_hex+')#';
+    //alert('tmp_json_str='+tmp_json_str);
+    document.getElementById("debug_data").value=update_uri;
+    
+    
+    //调用API更新登记地址
+    PeerWeb.getPPkResource(
+        update_uri,
+        'content',
+        'callback_updateOwnerAddress'  //回调方法名称
+    );
+}
+
+function callback_updateOwnerAddress(status,obj_data){
+    if('OK'==status){
+        try{
+            document.getElementById("debug_data").value="status_code="+obj_data.status_code+"\ntype="+obj_data.type+" \nlength="+obj_data.length+"\nservice_url="+obj_data.url;
+            
+            if(obj_data.status_code!=200){
+                showErrorMag("登记更新出错(status_code:"+obj_data.status_code+")！\n请稍后再试");
+                return;
+            }
+            
+            var content=window.atob(obj_data.content_base64);
+            //var content=obj_data.content_base64;
+            document.getElementById("debug_data").value="type="+obj_data.type+" \nlength="+obj_data.length+"\ncontent="+content+"\nservice_url="+obj_data.url;
+            //var obj_content=JSON.parse(content);
+            //alert("obj_content.address="+obj_content.address);
+            document.getElementById("use_exist_odin").value="已成功提交";
+            
+            getBindedAddress();
+            
+        }catch(e){
+            showErrorMag("获得的应答消息有误!\n"+e);
+        }
+    }else{
+        showErrorMag("登记更新出错！\n请稍后再试");
+    }
+}
+
+function showErrorMag(msg){
+    alert(msg);
+    document.getElementById("use_exist_odin").disabled=false;
+    document.getElementById("use_exist_odin").value="重新提交";
+}
+
+</script>
+</html>
