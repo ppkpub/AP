@@ -1,0 +1,55 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>奥丁号浏览工具DEMO</title>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default" role="navigation">
+<div class="container-fluid">
+  <div class="navbar-header">
+    <a class="navbar-brand logo" href="./">浏览小工具</a>
+  </div>
+
+  <div id="bs-navbar-collapse-1">
+    <input id="go_uri" type="text" value="" onChange="showPPkURI();"><input type="button" value="Go" onclick="showPPkURI();">
+  </div>
+</div>
+</nav>
+
+<iframe id="ppk_frame" height="80%" src="" frameBorder="0" width="99.6%"></iframe>
+
+<script type="text/javascript">
+window.onload=function(){
+    document.getElementById('go_uri').value = getQueryString('go');
+    showPPkURI();
+}
+
+function showPPkURI(){
+    var go_uri = document.getElementById('go_uri').value;
+    if(go_uri.length==0){
+        go_uri = 'ppk:0/';
+        document.getElementById('go_uri').value = go_uri;
+    }
+    var frame_url = 'http://tool.ppkpub.org:9876/?go='+encodeURIComponent(go_uri);
+    //alert(frame_url);
+    document.getElementById('ppk_frame').src=frame_url;
+}
+    
+function getQueryString(name) {
+    let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    let r = window.location.search.substr(1).match(reg);
+    if (r != null) {
+        return decodeURIComponent(r[2]);
+    };
+    return null;
+}
+</script>
+
+
+

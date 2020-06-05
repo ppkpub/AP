@@ -1,0 +1,122 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>PNS测试页面- TestPage for AP2</title>
+</head>
+<body>
+
+<h3>PNS测试页面- TestPage for AP2</h3>
+
+<h3>AP2节点(开启签名)</h3>
+<ul>
+<li><a href="ppk:ap2*">查看根标识属性</a></li>
+<li><a href="ppk:ap2/">查看内容主页</a></li>
+<li><a href="ppk:ap2/*1.0">查看内容主页(指定版本1.0)</a></li>
+<li><a href="ppk:ap2/sub*">查看子路径属性</a></li>
+<li><a href="ppk:ap2/sub/">查看内容子页</a></li>
+
+<li><a href="ppk:ap2/sub/nover.png">查看图像A（文件名没有带版本）</a><br>
+<img src="ppk:ap2/sub/nover.png">
+</li>
+<li><a href="ppk:ap2/sub/test.png*">查看图像B（最新版本）</a><br>
+<img src="ppk:ap2/sub/test.png*">
+</li>
+<li><a href="ppk:ap2/sub/test.png*1.0">查看图像B（指定版本1.0）</a><br>
+<img src="ppk:ap2/sub/test.png*1.0">
+</li>
+<li><a href="ppk:ap2/sub/test.png*2.0">查看图像B（指定版本2.0）</a><br>
+<img src="ppk:ap2/sub/test.png*2.0">
+</li>
+
+
+<li><a href="ppk:ap2/sub/large.png*">查看较大图像C</a></li>
+<li><a href="ppk:ap2/sub/large.png*1573048111">查看图像C（指定文件时间戳版本）</a><br>
+
+<p>测试动态方法</p>
+<li><a href="ppk:ap2/sub/helloworld()*">ppk:ap2/sub/helloworld()</a></li>
+<li><a href="ppk:ap2/sub/sum(1,2)*">ppk:ap2/sub/sum(1,2)</a></li>
+<li><a href="ppk:ap2/sub/sum(1,2,3)*">ppk:ap2/sub/sum(1,2,3)</a></li>
+
+
+<p>测试映射转向</p>
+<li><a href="ppk:apb/">内部透明映射 ppk:apb/ 内容等同 ppk:ap2/</a></li>
+<li><a href="ppk:172/">提示外部转向 ppk:172/ -> ppk:ap2/</a></li>
+<li><a href="ppk:172/sub/test.png*1.0">提示外部转向 ppk:172/sub/test.png*1.0 ->ppk:ap2/sub/test.png*1.0</a></li>
+<li><a href="ppk:513390.2015/">两次外部转向 513390.2015/ -> ppk:172/ -> ppk:ap2/</a></li>
+
+
+<p>测试特殊情况</p>
+<li><a href="ppk:ap2/sub/noext">访问没有后缀名的文件</a></li>
+<li><a href="ppk:ap2/sub/toobig.jpg*">访问超出大小限制的文件</a></li>
+
+<p>测试异常情况</p>
+<li><a href="ppk:ap2*404">查看根标识属性(指定不存在的版本)</a></li>
+<li><a href="ppk:ap2/*404">查看内容主页(指定不存在的版本)</a></li>
+<li><a href="ppk:ap2/404">查看不存在的路径属性</a></li>
+<li><a href="ppk:ap2/404/">查看不存在的子路径主页</a></li>
+<li><a href="ppk:ap2/sub/404*">查看不存在的子内容</a></li>
+<li><a href="ppk:ap2/sub/test.png*404">查看不存在图像</a><br>
+<img src="ppk:ap2/sub/test.png*404">
+</li>
+<li><a href="ppk:ap2/sub/sum(1,2,3)*22222">访问不支持的动态方法历史结果 ppk:ap2/sub/sum(1,2,3)*22222</a></li>
+</ul>
+
+<h3>ARC节点(与AP2同属一个根标识下的不同转移名称, 有不同的签名密钥)</h3>
+<ul>
+<li><a href="ppk:arc*">查看根标识属性</a></li>
+<li><a href="ppk:arc/">查看内容主页（文件名称不带版本）</a></li>
+<p>测试子路径映射转向</p>
+<li><a href="ppk:arc/ap2*">提示子路径属性外部转向 ppk:arc/ap2* -> ppk:ap2*</a></li>
+<li><a href="ppk:arc/ap2/">提示子路径内容外部转向 ppk:arc/ap2/ -> ppk:ap2/</a></li>
+<li><a href="ppk:arc/ap2/sub/test.png*1.0">提示外部转向 ppk:arc/ap2/sub/test.png*1.0 -> ppk:ap2/sub/test.png*1.0</a></li>
+
+<p>测试子路径映射转向到不带签名的节点</p>
+<li><a href="ppk:arc/105522*">提示子路径属性外部转向 ppk:arc/105522* -> ppk:105522*</a></li>
+<li><a href="ppk:arc/105522/">提示子路径内容外部转向 ppk:arc/105522/ -> ppk:105522/</a></li>
+<li><a href="ppk:arc/105522/sub/nover.png">提示外部转向 ppk:arc/105522/sub/test.png*1.0 -> ppk:105522/sub/nover.png</a></li>
+
+<p>测试异构转向到HTTP网站</p>
+<li><a href="ppk:arc/ppkpub/">提示异构转向 ppk:arc/ppkpub/ -> http://ppkpub.org/</a></li>
+<li><a href="ppk:arc/ppkpub_en.html">提示异构转向 ppk:arc/ppkpub_en.html -> http://ppkpub.org/index_en.html</a></li>
+<li><a href="ppk:arc/logo.png">提示异构转向 ppk:arc/logo.png -> http://ppkpub.org/images/logo.png</a></li>
+
+</ul>
+
+
+<h3>105522节点（关闭签名）</h3>
+<ul>
+<li><a href="ppk:105522*">查看根标识属性</a></li>
+<li><a href="ppk:105522/">查看内容主页</a></li>
+<li><a href="ppk:105522/sub/">查看内容子页</a></li>
+<li><a href="ppk:105522/sub/nover.png">查看图像A（没有版本）</a></li>
+<li><a href="ppk:105522/sub/test.png*">查看图像B（最新版本）</a></li>
+<li><a href="ppk:105522/sub/test.png*1.0">查看图像B（指定版本1.0）</a></li>
+<li><a href="ppk:105522/sub/test.png*2.0">查看图像B（指定版本2.0）</a></li>
+<li><a href="ppk:105522/sub/large.png*">查看大图像C</a></li>
+<p>测试映射转向</p>
+<li><a href="ppk:AOJJCC/">内部透明映射 ppk:AOJJCC/ 内容等同 ppk:105522/ </a></li>
+<li><a href="ppk:LOSSZZ/">提示外部转向 ppk:LOSSZZ/ -> ppk:105522/</a></li>
+
+<p>测试子路径映射转向到带签名的节点</p>
+<li><a href="ppk:105522/ap2*">提示子路径属性外部转向 ppk:105522/ap2* -> ppk:ap2*</a></li>
+<li><a href="ppk:105522/ap2/">提示子路径内容外部转向 ppk:105522/ap2/ -> ppk:ap2/</a></li>
+<li><a href="ppk:105522/ap2/sub/test.png*1.0">嵌入外部转向的图片 ppk:105522/ap2/sub/test.png*1.0 -> ppk:ap2/sub/test.png*1.0</a><br>
+<img src="ppk:105522/ap2/sub/test.png*1.0">
+</li>
+</ul>
+
+<h3> ppk001.sinaapp.com 节点（兼容传统域名）</h3>
+<ul>
+<li><a href="ppk:ppk001.sinaapp.com*">查看根标识属性</a></li>
+<li><a href="ppk:ppk001.sinaapp.com/">查看内容主页</a></li>
+</ul>
+
+<h3>更多AP节点链接</h3>
+<ul>
+<li><a href="ppk:ap2/">AP2节点(开启签名)</a></li>
+<li><a href="ppk:105522/">105522节点(关闭签名)</a></li>
+<li><a href="ppk:ppkpub.org/">直接指向传统网站 ppk:ppkpub.org</a></li>
+<li><a href="ppk:baidu.com/">直接指向传统网站 ppk:baidu.com</a></li>
+<li><a href="ppk:google.com/">直接指向传统网站 ppk:google.com</a></li>
+</ul>
+
+</html>
